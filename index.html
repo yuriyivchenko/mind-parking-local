@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Парковка для розуму</title>
+  <meta name="description" content="Локальна Парковка для розуму на базі localStorage." />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --bg-2: #141922;
+      --panel: rgba(23, 26, 33, 0.94);
+      --panel-2: #1c2230;
+      --text: #eef2f7;
+      --muted: #a6b0c0;
+      --line: #31394a;
+      --accent: #7dd3fc;
+      --accent-2: #86efac;
+      --warning: #fbbf24;
+      --orange: #fb923c;
+      --danger: #f87171;
+      --violet: #d8b4fe;
+      --light: #cbd5e1;
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+      --radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(125, 211, 252, 0.08), transparent 30%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      width: min(1220px, calc(100% - 28px));
+      margin: 0 auto;
+    }
+
+    .site-header,
+    .site-footer {
+      background: rgba(10, 12, 17, 0.88);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .site-footer {
+      border-top: 1px solid var(--line);
+      border-bottom: 0;
+      margin-top: 34px;
+    }
+
+    .header-row {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .site-header h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 3vw, 2rem);
+    }
+
+    .main-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .main-nav a {
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--line);
+      padding: 10px 14px;
+      border-radius: 999px;
+      transition: .2s ease;
+    }
+
+    .main-nav a:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    main {
+      padding: 24px 0 8px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .hero h2,
+    .prose h2 {
+      margin-top: 0;
+    }
+
+    .hero p,
+    .prose p,
+    .prose li {
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .idea-form textarea,
+    .idea-form select,
+    .toolbar input,
+    .toolbar select {
+      width: 100%;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+    }
+
+    .idea-form textarea:focus,
+    .idea-form select:focus,
+    .toolbar input:focus,
+    .toolbar select:focus {
+      border-color: var(--accent);
+    }
+
+    .idea-form textarea {
+      min-height: 120px;
+      resize: vertical;
+      margin-bottom: 14px;
+    }
+
+    .form-row,
+    .toolbar-row {
+      display: grid;
+      gap: 14px;
+      align-items: end;
+    }
+
+    .form-row {
+      grid-template-columns: 190px 1fr;
+    }
+
+    .toolbar-row {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    button {
+      border: 1px solid transparent;
+      border-radius: 14px;
+      background: var(--accent);
+      color: #07111b;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .danger {
+      background: var(--danger);
+      color: #280a0a;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .column h3 {
+      margin: 0 0 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .column h3 span {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .idea-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .idea {
+      background: #12161d;
+      border: 1px solid #2c3442;
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .idea.old-1 { border-color: var(--warning); }
+    .idea.old-2 { border-color: var(--orange); }
+    .idea.old-3 { border-color: var(--danger); }
+
+    .idea-tag {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(125, 211, 252, 0.12);
+      border: 1px solid rgba(125, 211, 252, 0.28);
+      color: var(--accent);
+      font-size: .8rem;
+    }
+
+    .idea-text {
+      white-space: pre-wrap;
+      line-height: 1.55;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+
+    .idea-meta {
+      color: var(--muted);
+      font-size: .85rem;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .idea-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .idea-actions button {
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: .92rem;
+    }
+
+    .park-btn { background: var(--light); }
+    .proc-btn { background: #fcd34d; }
+    .done-btn { background: var(--accent-2); }
+    .edit-btn { background: var(--violet); }
+    .delete-btn { background: var(--danger); }
+
+    .empty {
+      padding: 16px;
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      color: var(--muted);
+      text-align: center;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .prose ul {
+      padding-left: 20px;
+    }
+
+    .prose code {
+      background: #0d1016;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 2px 7px;
+    }
+
+    .site-footer .wrap {
+      padding: 18px 0;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      left: -9999px;
+    }
+
+    @media (max-width: 980px) {
+      .board {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .form-row,
+      .toolbar-row {
+        grid-template-columns: 1fr;
+      }
+
+      .main-nav {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-row">
+      <h1>🧠 Парковка для розуму</h1>
+      <nav class="main-nav" aria-label="Головне меню">
+        <a href="#parking">Парковка</a>
+        <a href="#readme">README</a>
+        <a href="#about">Про проєкт</a>
+        <a href="#contacts">Контакти</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="parking" class="hero card">
+      <h2>Запиши думку, щоб вона перестала крутитися в голові</h2>
+      <p>
+        Ця версія працює повністю в браузері. Усі записи зберігаються локально через
+        <strong>localStorage</strong>, без сервера і без Node.js.
+      </p>
+
+      <form id="idea-form" class="idea-form">
+        <label class="visually-hidden" for="idea-input">Нова думка</label>
+        <textarea id="idea-input" placeholder="Запиши думку, план, ідею або хвіст..." required></textarea>
+
+        <div class="form-row">
+          <div>
+            <label for="idea-tag">Категорія</label>
+            <select id="idea-tag">
+              <option value="idea">Ідея</option>
+              <option value="plan">План</option>
+              <option value="task">Задача</option>
+              <option value="fear">Тривога</option>
+              <option value="note">Нотатка</option>
+            </select>
+          </div>
+          <button type="submit">Припаркувати</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="toolbar card">
+      <div class="toolbar-row">
+        <div>
+          <label for="filter-status">Фільтр за статусом</label>
+          <select id="filter-status">
+            <option value="all">Усі</option>
+            <option value="parked">Припарковані</option>
+            <option value="processing">В роботі</option>
+            <option value="done">Завершені</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="search-input">Пошук</label>
+          <input id="search-input" type="search" placeholder="Пошук по тексту..." />
+        </div>
+
+        <div>
+          <label for="sort-mode">Сортування</label>
+          <select id="sort-mode">
+            <option value="newest">Новіші зверху</option>
+            <option value="oldest">Старіші зверху</option>
+          </select>
+        </div>
+
+        <div class="toolbar-actions">
+          <button id="export-btn" type="button">Експорт JSON</button>
+          <button id="clear-all-btn" type="button" class="danger">Очистити все</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="board">
+      <article class="column card">
+        <h3>🅿️ Припарковані <span id="count-parked">0</span></h3>
+        <div id="parked-list" class="idea-list"></div>
+      </article>
+
+      <article class="column card">
+        <h3>🔄 В роботі <span id="count-processing">0</span></h3>
+        <div id="processing-list" class="idea-list"></div>
+      </article>
+
+      <article class="column card">
+        <h3>✅ Завершені <span id="count-done">0</span></h3>
+        <div id="done-list" class="idea-list"></div>
+      </article>
+    </section>
+
+    <section id="readme" class="card prose">
+      <h2>README</h2>
+      <p><strong>Парковка для розуму</strong> — це локальний інструмент для тимчасового зберігання думок, ідей, планів і внутрішніх хвостів.</p>
+      <p>Коли думка записана, вона менше тисне на увагу. Її можна не носити постійно в голові, а припаркувати, повернутися до неї пізніше, завершити або відпустити.</p>
+      <ul>
+        <li>Записав</li>
+        <li>Припаркував</li>
+        <li>Повернувся пізніше</li>
+        <li>Перевів у роботу, завершив або видалив</li>
+      </ul>
+      <p>Ця версія працює на <code>localStorage</code>, тому записи зберігаються тільки в поточному браузері на поточному пристрої.</p>
+    </section>
+
+    <section id="about" class="card prose">
+      <h2>Про проєкт</h2>
+      <p>Проєкт створений як навчальний і практичний приклад вебдодатка без бекенду.</p>
+      <p>Він підходить для:</p>
+      <ul>
+        <li>вивчення HTML, CSS, JavaScript</li>
+        <li>практики з localStorage</li>
+        <li>особистого локального використання</li>
+      </ul>
+      <p>Це не соціальна мережа і не публічний планувальник. Це особистий інструмент, який працює локально.</p>
+    </section>
+
+    <section id="contacts" class="card prose">
+      <h2>Контакти</h2>
+      <p>Автор: Yuriy Ivchenko</p>
+      <p>GitHub: yuriyivchenko</p>
+      <p>За бажанням тут можна додати email, Telegram або посилання на репозиторій.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Mind Parking · localStorage edition</p>
+    </div>
+  </footer>
+
+  <script>
+    const STORAGE_KEY = 'mindParkingIdeas';
+
+    const ideaForm = document.getElementById('idea-form');
+    const ideaInput = document.getElementById('idea-input');
+    const ideaTag = document.getElementById('idea-tag');
+
+    const filterStatus = document.getElementById('filter-status');
+    const searchInput = document.getElementById('search-input');
+    const sortMode = document.getElementById('sort-mode');
+
+    const exportBtn = document.getElementById('export-btn');
+    const clearAllBtn = document.getElementById('clear-all-btn');
+
+    const parkedList = document.getElementById('parked-list');
+    const processingList = document.getElementById('processing-list');
+    const doneList = document.getElementById('done-list');
+
+    const countParked = document.getElementById('count-parked');
+    const countProcessing = document.getElementById('count-processing');
+    const countDone = document.getElementById('count-done');
+
+    function loadIdeas() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (error) {
+        console.error('Помилка читання localStorage:', error);
+        return [];
+      }
+    }
+
+    function saveIdeas(ideas) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(ideas));
+    }
+
+    function createIdea(text, tag) {
+      return {
+        id: Date.now().toString() + Math.random().toString(16).slice(2, 6),
+        text: text.trim(),
+        tag: tag,
+        status: 'parked',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    function formatDate(dateString) {
+      return new Date(dateString).toLocaleString('uk-UA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function timeAgo(dateString) {
+      const now = Date.now();
+      const then = new Date(dateString).getTime();
+      const diffSeconds = Math.floor((now - then) / 1000);
+
+      if (diffSeconds < 60) return diffSeconds + ' сек';
+      if (diffSeconds < 3600) return Math.floor(diffSeconds / 60) + ' хв';
+      if (diffSeconds < 86400) return Math.floor(diffSeconds / 3600) + ' год';
+      if (diffSeconds < 2592000) return Math.floor(diffSeconds / 86400) + ' дн';
+      if (diffSeconds < 31536000) return Math.floor(diffSeconds / 2592000) + ' міс';
+      return Math.floor(diffSeconds / 31536000) + ' р';
+    }
+
+    function getAgeClass(dateString) {
+      const now = Date.now();
+      const then = new Date(dateString).getTime();
+      const days = Math.floor((now - then) / (1000 * 60 * 60 * 24));
+
+      if (days >= 30) return 'old-3';
+      if (days >= 7) return 'old-2';
+      if (days >= 1) return 'old-1';
+      return '';
+    }
+
+    function tagLabel(tag) {
+      const labels = {
+        idea: 'Ідея',
+        plan: 'План',
+        task: 'Задача',
+        fear: 'Тривога',
+        note: 'Нотатка'
+      };
+      return labels[tag] || tag;
+    }
+
+    function getFilteredIdeas() {
+      const ideas = loadIdeas();
+      const statusValue = filterStatus.value;
+      const searchValue = searchInput.value.trim().toLowerCase();
+      const sortValue = sortMode.value;
+
+      let filtered = ideas.filter(function (idea) {
+        const matchStatus = statusValue === 'all' || idea.status === statusValue;
+        const matchSearch =
+          !searchValue ||
+          idea.text.toLowerCase().includes(searchValue) ||
+          tagLabel(idea.tag).toLowerCase().includes(searchValue);
+
+        return matchStatus && matchSearch;
+      });
+
+      filtered.sort(function (a, b) {
+        if (sortValue === 'oldest') {
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        }
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
+      return filtered;
+    }
+
+    function clearColumns() {
+      parkedList.innerHTML = '';
+      processingList.innerHTML = '';
+      doneList.innerHTML = '';
+    }
+
+    function makeEmptyNote(text) {
+      const div = document.createElement('div');
+      div.className = 'empty';
+      div.textContent = text;
+      return div;
+    }
+
+    function renderIdea(idea) {
+      const article = document.createElement('article');
+      article.className = 'idea ' + getAgeClass(idea.createdAt);
+
+      article.innerHTML = `
+        <div class="idea-tag">${tagLabel(idea.tag)}</div>
+        <div class="idea-text"></div>
+        <div class="idea-meta">
+          Припарковано: ${formatDate(idea.createdAt)}<br>
+          Лежить: ${timeAgo(idea.createdAt)}
+        </div>
+        <div class="idea-actions">
+          <button class="park-btn" data-action="parked">P</button>
+          <button class="proc-btn" data-action="processing">→</button>
+          <button class="done-btn" data-action="done">✔</button>
+          <button class="edit-btn" data-action="edit">Редагувати</button>
+          <button class="delete-btn" data-action="delete">Відпустити</button>
+        </div>
+      `;
+
+      article.querySelector('.idea-text').textContent = idea.text;
+
+      article.querySelectorAll('button').forEach(function (button) {
+        button.addEventListener('click', function () {
+          handleIdeaAction(idea.id, button.dataset.action);
+        });
+      });
+
+      return article;
+    }
+
+    function render() {
+      clearColumns();
+
+      const allIdeas = loadIdeas();
+      const filteredIdeas = getFilteredIdeas();
+
+      const parkedCount = allIdeas.filter(function (item) { return item.status === 'parked'; }).length;
+      const processingCount = allIdeas.filter(function (item) { return item.status === 'processing'; }).length;
+      const doneCount = allIdeas.filter(function (item) { return item.status === 'done'; }).length;
+
+      countParked.textContent = parkedCount;
+      countProcessing.textContent = processingCount;
+      countDone.textContent = doneCount;
+
+      filteredIdeas.forEach(function (idea) {
+        const node = renderIdea(idea);
+
+        if (idea.status === 'parked') parkedList.appendChild(node);
+        if (idea.status === 'processing') processingList.appendChild(node);
+        if (idea.status === 'done') doneList.appendChild(node);
+      });
+
+      if (!parkedList.children.length) parkedList.appendChild(makeEmptyNote('Порожньо'));
+      if (!processingList.children.length) processingList.appendChild(makeEmptyNote('Порожньо'));
+      if (!doneList.children.length) doneList.appendChild(makeEmptyNote('Порожньо'));
+    }
+
+    function addIdea(event) {
+      event.preventDefault();
+
+      const text = ideaInput.value.trim();
+      const tag = ideaTag.value;
+
+      if (!text) return;
+
+      const ideas = loadIdeas();
+      ideas.push(createIdea(text, tag));
+      saveIdeas(ideas);
+
+      ideaForm.reset();
+      ideaTag.value = 'idea';
+      render();
+    }
+
+    function handleIdeaAction(id, action) {
+      const ideas = loadIdeas();
+      const idea = ideas.find(function (item) { return item.id === id; });
+
+      if (!idea) return;
+
+      if (action === 'delete') {
+        const confirmed = confirm('Відпустити цю думку?');
+        if (!confirmed) return;
+
+        const updated = ideas.filter(function (item) { return item.id !== id; });
+        saveIdeas(updated);
+        render();
+        return;
+      }
+
+      if (action === 'edit') {
+        const newText = prompt('Відредагуй текст:', idea.text);
+        if (newText === null) return;
+
+        const trimmed = newText.trim();
+        if (!trimmed) return;
+
+        idea.text = trimmed;
+        idea.updatedAt = new Date().toISOString();
+        saveIdeas(ideas);
+        render();
+        return;
+      }
+
+      if (['parked', 'processing', 'done'].includes(action)) {
+        idea.status = action;
+        idea.updatedAt = new Date().toISOString();
+        saveIdeas(ideas);
+        render();
+      }
+    }
+
+    function exportIdeas() {
+      const ideas = loadIdeas();
+      const blob = new Blob([JSON.stringify(ideas, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = 'mind-parking-export.json';
+      link.click();
+
+      URL.revokeObjectURL(url);
+    }
+
+    function clearAllIdeas() {
+      const confirmed = confirm('Очистити всі записи з localStorage?');
+      if (!confirmed) return;
+
+      localStorage.removeItem(STORAGE_KEY);
+      render();
+    }
+
+    ideaForm.addEventListener('submit', addIdea);
+    filterStatus.addEventListener('change', render);
+    searchInput.addEventListener('input', render);
+    sortMode.addEventListener('change', render);
+    exportBtn.addEventListener('click', exportIdeas);
+    clearAllBtn.addEventListener('click', clearAllIdeas);
+
+    document.addEventListener('DOMContentLoaded', render);
+  </script>
+</body>
+</html>
