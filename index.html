@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -230,9 +231,17 @@
       padding: 14px;
     }
 
-    .idea.old-1 { border-color: var(--warning); }
-    .idea.old-2 { border-color: var(--orange); }
-    .idea.old-3 { border-color: var(--danger); }
+    .idea.old-1 {
+      border-color: var(--warning);
+    }
+
+    .idea.old-2 {
+      border-color: var(--orange);
+    }
+
+    .idea.old-3 {
+      border-color: var(--danger);
+    }
 
     .idea-tag {
       display: inline-block;
@@ -271,11 +280,25 @@
       font-size: .92rem;
     }
 
-    .park-btn { background: var(--light); }
-    .proc-btn { background: #fcd34d; }
-    .done-btn { background: var(--accent-2); }
-    .edit-btn { background: var(--violet); }
-    .delete-btn { background: var(--danger); }
+    .park-btn {
+      background: var(--light);
+    }
+
+    .proc-btn {
+      background: #fcd34d;
+    }
+
+    .done-btn {
+      background: var(--accent-2);
+    }
+
+    .edit-btn {
+      background: var(--violet);
+    }
+
+    .delete-btn {
+      background: var(--danger);
+    }
 
     .empty {
       padding: 16px;
@@ -283,7 +306,7 @@
       border-radius: 14px;
       color: var(--muted);
       text-align: center;
-      background: rgba(255,255,255,0.02);
+      background: rgba(255, 255, 255, 0.02);
     }
 
     .prose ul {
@@ -317,6 +340,7 @@
     }
 
     @media (max-width: 720px) {
+
       .form-row,
       .toolbar-row {
         grid-template-columns: 1fr;
@@ -328,6 +352,7 @@
     }
   </style>
 </head>
+
 <body>
   <header class="site-header">
     <div class="wrap header-row">
@@ -420,15 +445,30 @@
 
     <section id="readme" class="card prose">
       <h2>README</h2>
-      <p><strong>Парковка для розуму</strong> — це локальний інструмент для тимчасового зберігання думок, ідей, планів і внутрішніх хвостів.</p>
-      <p>Коли думка записана, вона менше тисне на увагу. Її можна не носити постійно в голові, а припаркувати, повернутися до неї пізніше, завершити або відпустити.</p>
+      <p><strong>Парковка для розуму</strong> — це локальний інструмент для тимчасового зберігання думок, ідей, планів і
+        внутрішніх хвостів.</p>
+      <p>Коли думка записана, вона менше тисне на увагу. Її можна не носити постійно в голові, а припаркувати,
+        повернутися до неї пізніше, завершити або відпустити.</p>
+      <p>Щоб форматувати текст у HTML, використовуйте такі теги:</p>
       <ul>
-        <li>Записав</li>
-        <li>Припаркував</li>
-        <li>Повернувся пізніше</li>
-        <li>Перевів у роботу, завершив або видалив</li>
+        <li><code>&lt;p&gt;</code> — абзац</li>
+        <li><code>&lt;br&gt;</code> — перенос рядка</li>
+        <li><code>&lt;strong&gt;</code> або <code>&lt;b&gt;</code> — жирний текст</li>
+        <li><code>&lt;em&gt;</code> або <code>&lt;i&gt;</code> — курсив</li>
+        <li><code>&lt;mark&gt;</code> — підсвітка</li>
+        <li><code>&lt;u&gt;</code> — підкреслення</li>
+        <li><code>&lt;ul&gt;</code> / <code>&lt;ol&gt;</code> + <code>&lt;li&gt;</code> — списки</li>
       </ul>
-      <p>Ця версія працює на <code>localStorage</code>, тому записи зберігаються тільки в поточному браузері на поточному пристрої.</p>
+      <p>Приклад коду:</p>
+      <pre><code>&lt;p&gt;Перший рядок&lt;br&gt;Другий рядок&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Пункт 1&lt;/li&gt;
+  &lt;li&gt;Пункт 2&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Жирний&lt;/strong&gt;, &lt;em&gt;курсив&lt;/em&gt;, &lt;mark&gt;виділення&lt;/mark&gt;&lt;/p&gt;
+</code></pre>
+      <p>Ця версія працює на <code>localStorage</code>, тому записи зберігаються тільки в поточному браузері на
+        поточному пристрої.</p>
     </section>
 
     <section id="about" class="card prose">
@@ -584,7 +624,7 @@
     function makeEmptyNote(text) {
       const div = document.createElement('div');
       div.className = 'empty';
-      div.textContent = text;
+      div.innerHTML = text;
       return div;
     }
 
@@ -608,7 +648,7 @@
         </div>
       `;
 
-      article.querySelector('.idea-text').textContent = idea.text;
+      article.querySelector('.idea-text').innerHTML = idea.text.replace(/\n/g, '<br>');
 
       article.querySelectorAll('button').forEach(function (button) {
         button.addEventListener('click', function () {
@@ -629,9 +669,9 @@
       const processingCount = allIdeas.filter(function (item) { return item.status === 'processing'; }).length;
       const doneCount = allIdeas.filter(function (item) { return item.status === 'done'; }).length;
 
-      countParked.textContent = parkedCount;
-      countProcessing.textContent = processingCount;
-      countDone.textContent = doneCount;
+      countParked.innerHTML = parkedCount;
+      countProcessing.innerHTML = processingCount;
+      countDone.innerHTML = doneCount;
 
       filteredIdeas.forEach(function (idea) {
         const node = renderIdea(idea);
@@ -732,4 +772,5 @@
     document.addEventListener('DOMContentLoaded', render);
   </script>
 </body>
+
 </html>
